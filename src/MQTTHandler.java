@@ -13,9 +13,6 @@ public class MQTTHandler implements MqttCallback {
     public MQTTHandler() {
     }
 
-//    public static void main(String[] args) {
-//        new MQTTHandler().start();
-//    }
 
     public void start() {
         try {
@@ -32,6 +29,36 @@ public class MQTTHandler implements MqttCallback {
         }
     }
 
+    public static void parseMessage(String topic, MqttMessage mqttMessage){
+
+        // Extract info
+        String deviceId = topic.substring(0,10);
+        String messageType = topic.substring(11);
+        String payload = mqttMessage.toString();
+
+
+        // Debug content
+        System.out.println(deviceId + " : "+ messageType + " : " + payload);
+
+        // Decide what to do with content
+        switch (messageType) {
+            case "fire":
+                Database.logFireState(payload,deviceId);
+                break;
+            case "siren_cmd":
+                Database.logSirenCommand(payload,deviceId);
+                break;
+            case "siren_state":
+                Database.logSirenState(payload,deviceId);
+                break;
+            default:
+                System.out.print("this message didn't fit possible outcomes: " + topic + " - "+ mqttMessage.toString());
+                // TODO: handle default
+        }
+
+
+    }
+
     @Override
     public void connectionLost(Throwable cause) {
         // TODO Auto-generated method stub
@@ -41,17 +68,11 @@ public class MQTTHandler implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message)
             throws Exception {
-        System.out.println(message);
-
-        Database.updateCurrentState(0, message.toString(),0,"123");
-        Database.logState(0, message.toString(),0,"123");
-
-//        Server.logState(topic.length(),message.toString(), message.getId(),"666");
+        parseMessage(topic,message);
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         // TODO Auto-generated method stub
-
     }
 }
