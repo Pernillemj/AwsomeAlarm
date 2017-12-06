@@ -5,7 +5,6 @@
  */
 
 /**
- *
  * @author irl
  */
 public class TCPrequestGenerator {
@@ -15,14 +14,14 @@ public class TCPrequestGenerator {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        
-        for(int i=1;i<=1;i++){
-             
-            ClientThread temp= new ClientThread();
+
+        for (int i = 1; i <= 1; i++) {
+
+            ClientThread temp = new ClientThread();
             temp.start();
             System.out.println("Started client:" + i);
-       }
-        
+        }
+
     }
-    
+
 }

@@ -2,13 +2,15 @@
  * Created by Pernille on 20/11/2017.
  */
 
+import com.sun.xml.internal.bind.v2.TODO;
+
 import java.sql.*;
 import java.util.ArrayList;
 
 
 public class Database {
 
-    Connection connection;
+     Connection connection;
 
     public Database() {
         try {
@@ -23,7 +25,7 @@ public class Database {
 
     public static void main(String[] args) throws Exception {
 
-        /// DO NO USE !!!!!!!!!!
+        /// DO NOT USE !!!!!!!!!!
 
 
 //       registerUser("user", "mail", "pass");
@@ -32,7 +34,7 @@ public class Database {
 //        updateCurrentState(0, "command", 0, "1234567891");
 //        registerDeviceToUser("1234567893", 28);
 //        editDevice("129", "986", "k");
-//        getCurrentState("123");
+//        getCurrentState("1234567890");
 //        getLoggedStates("123");
 
 
@@ -60,7 +62,7 @@ public class Database {
         }
     }
 
-    public ResultSet retrieveFromDb(String queryString) {
+    public  ResultSet retrieveFromDb(String queryString) {
 
         try {
 
@@ -152,7 +154,6 @@ public class Database {
 
     }
 
-
     public  void logFireState(String value, String deviceID) {
 
         // Current state
@@ -184,7 +185,6 @@ public class Database {
         writeToDb(query2);
     }
 
-
     public  void logSirenState(String value, String deviceID) {
 
         // Current state
@@ -199,8 +199,7 @@ public class Database {
         writeToDb(query2);
     }
 
-
-    public String getCurrentState(String deviceID) {
+    public  String getCurrentState(String deviceID) {
 
         String result = "";
 
@@ -222,6 +221,25 @@ public class Database {
             e.printStackTrace();
         }
 
+        // append device name
+        String query2 = "SELECT * FROM Devices WHERE devices_id = '" + deviceID + "' ";
+
+        ResultSet rs2 = retrieveFromDb(query2);
+
+        try {
+            rs2.next();
+            String deviceName = rs2.getString("device_name");
+
+            String tmp = result.concat(";"+deviceName);
+
+            result = tmp;
+
+        } catch (Exception e) {
+            System.out.println("Failed to get device name");
+            e.printStackTrace();
+        }
+
+
         return result;
     }
 
@@ -235,12 +253,13 @@ public class Database {
 
         try {
             while (rs.next()) {
+                Timestamp t = rs.getTimestamp("timestamp");
                 int f = rs.getInt("fire_state");
                 String cmd = rs.getString("sirene_cmd");
                 int s = rs.getInt("sirene_state");
                 String id = rs.getString("Devices_devices_id");
 
-                String state = f + "," + cmd + "," + s + "," + id;
+                String state = t + "," + f + "," + cmd + "," + s + "," + id;
 
                 System.out.println("State: " + state);
 
@@ -252,7 +271,6 @@ public class Database {
 
         return resultList;
     }
-
 
     public static Connection getConnection() throws Exception {
         try {

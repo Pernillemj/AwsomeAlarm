@@ -50,13 +50,13 @@ public class ClientThread extends Thread{
         // String tmp = "04;29";
 
         // Get current state
-        //String tmp = "05;0987654321";
+        //String tmp = "05;1234567890";
 
-        // Get current state
-        //String tmp = "06;0987654321";
+        // Get logged state
+        String tmp = "06;0987654321";
 
         // Turnoff alarm
-        String tmp = "07;0987654321";
+        //String tmp = "07;0987654321";
 
         // Register device to user
         //String tmp = "08;0987654321;29";
