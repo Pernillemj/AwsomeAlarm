@@ -9,54 +9,72 @@ public class MQTTHandler implements MqttCallback {
 
 
     MqttClient client;
+    Database database;
 
     public MQTTHandler() {
     }
 
 
-    public void start() {
+    public MqttClient start() {
         try {
+            database = new Database();
+
+            System.out.println("MQTTHandler started");
             client = new MqttClient("tcp://127.0.0.1:1883", "Sending");
             client.connect();
             client.setCallback(this);
+
+            MqttMessage message = new MqttMessage();
+            message.setPayload("Server MQTT".getBytes());
+            client.publish("server", message);
             client.subscribe("#");
-//            MqttMessage message = new MqttMessage();
-//            message.setPayload("A single message from my computer fff"
-//                    .getBytes());
-//            client.publish("test/state", message);
+
         } catch (MqttException e) {
             e.printStackTrace();
         }
+        return client;
     }
 
-    public static void parseMessage(String topic, MqttMessage mqttMessage){
+    public void parseMessage(String topic, MqttMessage mqttMessage) {
 
+        //System.out.println("Parsing message: " + topic + " " + mqttMessage);
         // Extract info
-        String deviceId = topic.substring(0,10);
+        String deviceId = topic.substring(0, 10);
         String messageType = topic.substring(11);
         String payload = mqttMessage.toString();
 
-
         // Debug content
-        System.out.println(deviceId + " : "+ messageType + " : " + payload);
+        //System.out.println(deviceId + " : " + messageType + " : " + payload);
 
         // Decide what to do with content
         switch (messageType) {
             case "fire":
-                Database.logFireState(payload,deviceId);
+                database.logFireState(payload, deviceId);
                 break;
             case "siren_cmd":
-                Database.logSirenCommand(payload,deviceId);
+                database.logSirenCommand(payload, deviceId);
                 break;
             case "siren_state":
-                Database.logSirenState(payload,deviceId);
+                database.logSirenState(payload, deviceId);
                 break;
             default:
-                System.out.print("this message didn't fit possible outcomes: " + topic + " - "+ mqttMessage.toString());
+                System.out.print("this message didn't fit possible outcomes: " + topic + " - " + mqttMessage.toString());
                 // TODO: handle default
         }
 
 
+    }
+
+    public void publish(String topic, String message){
+
+        MqttMessage msg = new MqttMessage();
+        msg.setPayload(message.getBytes());
+        try {
+            client.publish("server", msg);
+            client.subscribe("#");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -68,7 +86,8 @@ public class MQTTHandler implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message)
             throws Exception {
-        parseMessage(topic,message);
+        System.out.println("recieved message:" + topic + " " + message);
+        parseMessage(topic, message);
     }
 
     @Override

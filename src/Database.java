@@ -8,16 +8,29 @@ import java.util.ArrayList;
 
 public class Database {
 
+    Connection connection;
+
+    public Database() {
+        try {
+            connection = getConnection();
+            System.out.println("Succesfully connected to Database");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Could not connect to Database");
+        }
+
+    }
+
     public static void main(String[] args) throws Exception {
 
         /// DO NO USE !!!!!!!!!!
 
 
-//       registerUser("Sebastiwn", "s@mail", "noget");
-//        registerDevice("1234567891", "98.68987,65.0986", "kitchen");
+//       registerUser("user", "mail", "pass");
+//        registerDevice("1234567893", "98.68987,65.0986", "kitchen");
 //        logState(1, "-", 0, "123");
 //        updateCurrentState(0, "command", 0, "1234567891");
-//        registerDeviceToUser("1234567891", 1);
+//        registerDeviceToUser("1234567893", 28);
 //        editDevice("129", "986", "k");
 //        getCurrentState("123");
 //        getLoggedStates("123");
@@ -31,7 +44,7 @@ public class Database {
         logSirenState("-1", "1234567891");*/
     }
 
-    public static void writeToDb(String dbCommand) {
+    public void writeToDb(String dbCommand) {
 
         try {
             Connection connection = getConnection();
@@ -47,25 +60,27 @@ public class Database {
         }
     }
 
-    public static ResultSet retrieveFromDb(String queryString) {
+    public ResultSet retrieveFromDb(String queryString) {
 
         try {
 
-            Connection connection = getConnection();
+            // Connection connection = getConnection();
             Statement statement = connection.createStatement();
 
             ResultSet resultSet = statement.executeQuery(queryString);
-            /*while (resultSet.next()) {
+           /* while (resultSet.next()) {
                 int f = resultSet.getInt("fire_state");
                 String cmd = resultSet.getString("sirene_cmd");
                 int s = resultSet.getInt("sirene_state");
                 String id = resultSet.getString("Devices_devices_id");
 
                 // TODO: Remove before launch
-                //              System.out.println(id + " " + f + " " + cmd + " " + s);
-            }*/
+                              System.out.println(id + " " + f + " " + cmd + " " + s);
+            }
+            */
 
-            connection.close();
+            //   connection.close();
+
 
             return resultSet;
 
@@ -77,7 +92,7 @@ public class Database {
         return null;
     }
 
-    public static void registerUser(String name, String email, String password) {
+    public void registerUser(String name, String email, String password) {
 
         String query = "INSERT INTO Users (name, email, password)\n" +
                 "VALUES ('" + name + "', '" + email + "', '" + password + "')";
@@ -85,7 +100,7 @@ public class Database {
         writeToDb(query);
     }
 
-    public static void registerDevice(String deviceID, String location, String deviceName) {
+    public void registerDevice(String deviceID, String location, String deviceName) {
 
         String query = "INSERT INTO devices (devices_id, coordinate, device_name)\n" +
                 "VALUES ('" + deviceID + "', '" + location + "' , '" + deviceName + "')";
@@ -96,7 +111,7 @@ public class Database {
         logState(0, "0", 0, deviceID);
     }
 
-    public static void deleteDevice(String deviceID) {
+    public void deleteDevice(String deviceID) {
 
         String query = "DELETE FROM devices WHERE devices_id = '" + deviceID + "' ";
 
@@ -104,13 +119,13 @@ public class Database {
 
     }
 
-    public static void editDevice(String deviceID, String location, String deviceName) {
+    public void editDevice(String deviceID, String location, String deviceName) {
 
         deleteDevice(deviceID);
         registerDevice(deviceID, location, deviceName);
     }
 
-    public static void registerDeviceToUser(String deviceID, int userID) {
+    public void registerDeviceToUser(String deviceID, int userID) {
 
         String query = "INSERT INTO Devices_has_users\n" +
                 "VALUES ('" + deviceID + "', '" + userID + "')";
@@ -118,7 +133,7 @@ public class Database {
         writeToDb(query);
     }
 
-    public static void logState(int fireState, String sirenCommand, int sirenState, String deviceID) {
+    public void logState(int fireState, String sirenCommand, int sirenState, String deviceID) {
 
         String query = "INSERT INTO logged_state " +
                 "VALUES (CURRENT_TIMESTAMP(6),'" + fireState + "','" + sirenCommand + "','" + sirenState + "','" + deviceID + "')";
@@ -127,7 +142,7 @@ public class Database {
 
     }
 
-    public static void updateCurrentState(int fireState, String sirenCommand, int sirenState, String deviceID) {
+    public void updateCurrentState(int fireState, String sirenCommand, int sirenState, String deviceID) {
 
 
         String query = "REPLACE INTO current_state " +
@@ -138,7 +153,7 @@ public class Database {
     }
 
 
-    public static void logFireState(String value, String deviceID) {
+    public  void logFireState(String value, String deviceID) {
 
         // Current state
 
@@ -155,7 +170,7 @@ public class Database {
         writeToDb(query2);
     }
 
-    public static void logSirenCommand(String value, String deviceID) {
+    public  void logSirenCommand(String value, String deviceID) {
 
         // Current state
         String query = "UPDATE current_state SET sirene_cmd ='" + value + "' WHERE Devices_devices_id ='" + deviceID + "'";
@@ -170,7 +185,7 @@ public class Database {
     }
 
 
-    public static void logSirenState(String value, String deviceID) {
+    public  void logSirenState(String value, String deviceID) {
 
         // Current state
         String query = "UPDATE current_state SET sirene_state ='" + value + "' WHERE Devices_devices_id ='" + deviceID + "'";
@@ -185,38 +200,36 @@ public class Database {
     }
 
 
-    public static String getCurrentState(String deviceID) {
+    public String getCurrentState(String deviceID) {
 
         String result = "";
 
-        String query = "SELECT * FROM current_state " +
-                "WHERE Devices_devices_id = '" + deviceID + "'";
+        String query = "SELECT * FROM current_state WHERE Devices_devices_id = '" + deviceID + "'";
 
         ResultSet rs = retrieveFromDb(query);
 
         try {
-            while (rs.next()) {
-                int f = rs.getInt("fire_state");
-                String cmd = rs.getString("sirene_cmd");
-                int s = rs.getInt("sirene_state");
-                String id = rs.getString("Devices_devices_id");
+            rs.next();
+            int f = rs.getInt("fire_state");
+            String cmd = rs.getString("sirene_cmd");
+            int s = rs.getInt("sirene_state");
+            String id = rs.getString("Devices_devices_id");
 
-                String state = f + "," + cmd + "," + s + "," + id;
+            result = f + "," + cmd + "," + s + "," + id;
 
-                result = state;
-            }
         } catch (Exception e) {
+            System.out.println("Failed  to get current state");
             e.printStackTrace();
         }
 
         return result;
     }
 
-    public static ArrayList<String> getLoggedStates(String deviceId) {
+    public ArrayList<String> getLoggedStates(String deviceId) {
         ArrayList<String> resultList = new ArrayList<String>();
 
         String query = "SELECT * FROM logged_state " +
-                "WHERE Devices_devices_id = '" + deviceId + "'";
+                "WHERE Devices_devices_id = '" + deviceId + "'ORDER BY timestamp";
 
         ResultSet rs = retrieveFromDb(query);
 
@@ -228,6 +241,8 @@ public class Database {
                 String id = rs.getString("Devices_devices_id");
 
                 String state = f + "," + cmd + "," + s + "," + id;
+
+                System.out.println("State: " + state);
 
                 resultList.add(state);
             }

@@ -1,29 +1,53 @@
-import java.util.ArrayList;
-import java.util.function.Supplier;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 
 /**
  * Created by Pernille on 20/11/2017.
  */
+
+import org.eclipse.paho.client.mqttv3.*;
+
+
 public class Server {
 
-    public static void main(String[] args){
+    public static MqttClient mqttClient;
 
-        new MQTTHandler().start();
+    public static void main(String[] args) throws IOException {
 
-/*
-        String state = Database.getCurrentState("1234567891");
+        mqttClient = new MQTTHandler().start();
 
-        System.out.println(state);
+        System.out.println("Threaded Server is Running and listening on port 9999....");
+        ServerSocket mysocket = new ServerSocket(9999);
 
-        ArrayList<String> states = Database.getLoggedStates("1234567891");
+        Database database = new Database();
 
-        for (int i = 0 ; i < states.size();i++){
-            System.out.println(states.get(i));
+        while (true) {
+            Socket sock = mysocket.accept();
+            AppThreadHandler server = new AppThreadHandler(sock, database);
+
+            Thread serverThread = new Thread(server);
+            serverThread.start();
+
         }
-*/
-
-
     }
 
+/*
+    public static void publishToMqtt(String topic, String payload){
+        try {
+            MqttMessage message = new MqttMessage();
+            message.setPayload(payload.getBytes());
+            publishingClient.publish(topic, message);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    */
 
 }
+
+
+
